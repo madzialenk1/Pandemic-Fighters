@@ -1,0 +1,15 @@
+# Uncomment the next line to define a global platform for your project
+# platform :ios, '9.0'
+
+target 'pandemic fighters' do
+  
+  use_frameworks!
+  pod 'Firebase/Analytics' 
+  pod 'Firebase/Auth'
+  pod 'Firebase/Firestore'
+  pod 'FirebaseFirestoreSwift'
+  pod 'IQKeyboardManagerSwift', '6.3.0'
+  pod 'MapViewPlus'
+  
+
+end
