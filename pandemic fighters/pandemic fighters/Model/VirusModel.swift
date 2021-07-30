@@ -9,13 +9,14 @@
 import Foundation
 import CoreLocation
 
-struct VirusModel {
+struct VirusModel: Codable {
     
     let latitude : CLLocationDegrees
     let longtitude : CLLocationDegrees
     let tested: String
     let data: String
     let description: String
-    let symptoms: [Description]?
+    let symptoms: [String]
   
 }
+

@@ -11,6 +11,7 @@ import MapKit
 import CoreLocation
 import Firebase
 
+
 class MapViewController: UIViewController {
     
     @IBOutlet weak var gradientView: UIView!
@@ -23,6 +24,12 @@ class MapViewController: UIViewController {
     let alert = Alert()
     let decoder = Decoder()
     var annotations: [MyPointAnnotation] = []
+    
+    
+    
+    
+
+    let db = Firestore.firestore()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -46,11 +53,17 @@ class MapViewController: UIViewController {
         filterTheMap(virusLocation: annotations)
         
         
+
+        
+        
         
     }
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(true)
+        
     }
+    
+    
     
     
     override func willMove(toParent parent: UIViewController?) {
@@ -63,6 +76,8 @@ class MapViewController: UIViewController {
             }
         }
     }
+    
+
     
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?){
@@ -210,6 +225,9 @@ extension MapViewController: MKMapViewDelegate {
         else if annotation.identifier == "SelfReported" {
             annotationView?.image = UIImage(named: "Self-Reported")
         }
+        else if annotation.identifier == "New"{
+            annotationView?.image = UIImage(named: "pin")
+        }
         
         configureDetailView(annotationView: annotationView!, address: annotation.address ?? "Adress", description: annotation.virusDescription ?? "None", symptoms: annotation.symptoms ?? "None" ,tested: annotation.tested!)
         annotationView?.canShowCallout = true
@@ -237,6 +255,53 @@ extension MapViewController: CLLocationManagerDelegate {
 }
 
 extension MapViewController: VirusManagerDelegete {
+   
+    
+    
+    func listener() {
+        
+        
+        if let data = UserDefaults.standard.data(forKey: "Added") {
+            do {
+                // Create JSON Decoder
+                let decoder = JSONDecoder()
+                
+                let note = try decoder.decode(VirusModel.self, from: data)
+                print(note)
+                
+                let anno = MyPointAnnotation()
+
+                let CLLCoordType = CLLocationCoordinate2D(latitude: note.latitude,
+                                                          longitude: note.longtitude)
+                
+                anno.address = "Your new COVID report"
+                
+                anno.identifier = "New"
+                
+                    
+                
+                anno.tested = note.tested
+                anno.virusDescription = note.description
+                anno.date = Int(note.data)
+                var string = ""
+                
+                for symptom in note.symptoms {
+                        string.append(" \(symptom)")
+                    }
+                anno.symptoms = string
+                anno.coordinate = CLLCoordType
+                self.tableManager.append(TableManager(location: CLLocation(latitude: note.latitude,longitude: note.longtitude), data: note.data, description: note.description, address: anno.address))
+                annotations.append(anno)
+                
+                
+
+            } catch {
+                print("Unable to Decode  (\(error))")
+            }
+        
+    }
+
+}
     
     
     func updateMapView(virusLocation: [VirusModel] ){
@@ -284,13 +349,11 @@ extension MapViewController: VirusManagerDelegete {
                     
                     var string = ""
                     
-                    if let sym = virusLoc.symptoms {
-                        for symptom in sym {
-                            string.append(" \(symptom.stringValue)")
+                    
+                        for symptom in virusLoc.symptoms {
+                            string.append(" \(symptom)")
                         }
-                    } else {
-                        string = "None"
-                    }
+                    
                     anno.symptoms = string
                     anno.coordinate = CLLCoordType
                     
@@ -326,6 +389,7 @@ extension MapViewController: VirusManagerDelegete {
 //
 //
 //}
+
 
 
 

@@ -12,6 +12,7 @@ import CoreLocation
 
 protocol VirusManagerDelegete {
     func updateMapView(virusLocation: [VirusModel])
+    func listener()
 }
 
 struct VirusManager {
@@ -48,14 +49,20 @@ struct VirusManager {
         do {
             let decodedData = try decoder.decode(DataManager.self, from: virusData)
             for document in decodedData.documents {
+                var string: [String] = []
   
                 let lat = document.fields.latitude.doubleValue
                 let long = document.fields.longitude.doubleValue
                 let tested = document.fields.tested.stringValue
                 let date = document.fields.timeStamp.stringValue
                 let description = document.fields.fieldsDescription.stringValue
-                let symptoms = document.fields.symptoms?.arrayValue?.values
-                virusModelArray.append(VirusModel(latitude: lat, longtitude: long, tested: tested, data: date, description: description,symptoms: symptoms ))
+                if let symptoms = document.fields.symptoms?.arrayValue?.values {
+                    for i in symptoms {
+                        string.append(i.stringValue)
+                    }
+                }
+                
+                virusModelArray.append(VirusModel(latitude: lat, longtitude: long, tested: tested, data: date, description: description,symptoms: string ))
             }
         } catch {
             print(error)
@@ -66,6 +73,8 @@ struct VirusManager {
    
  
     func save (_ documentToSend: Document, completion: @escaping(Result<Document,APIError>) -> Void ) {
+        
+        self.delegete?.listener()
         
         if let url = URL(string: dataToSaveURL) {
             do {
@@ -80,11 +89,14 @@ struct VirusManager {
                     
                     guard let httpResponse = response as? HTTPURLResponse,
                         httpResponse.statusCode == 200
+                    
                         else {
                             print(response.debugDescription)
                             completion(.failure(.responseProblem))
                             return
                     }
+                    
+                    
                 }
                 dataTask.resume()
             }
@@ -105,3 +117,4 @@ enum APIError: Error {
     case decodingProblem
     case encodingProblem
 }
+

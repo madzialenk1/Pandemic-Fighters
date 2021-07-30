@@ -88,12 +88,36 @@ class ReportVirusViewController: UIViewController {
         
         let doc = Document(fields: Fields(longitude: Itude(doubleValue: longitude), timeStamp: Description(stringValue: String(exactTimeInMilliseconds)), selfReported: SelfReported(booleanValue: true), fieldsDescription: Description(stringValue: descriptionField.text!), latitude: Itude(doubleValue: latitude), tested: Description(stringValue: tested), symptoms: Symptoms(arrayValue: ArrayValue(values: des))))
         
+        var string: [String] = []
+        for i in des {
+            string.append(i.stringValue)
+        }
+        
+        let virusModel = VirusModel(latitude: latitude , longtitude: longitude, tested: tested, data: String(exactTimeInMilliseconds), description: descriptionField.text!, symptoms: string)
+        do {
+            // Create JSON Encoder
+            let encoder = JSONEncoder()
+
+            // Encode Note
+            let data = try encoder.encode(virusModel)
+
+            // Write/Set Data
+            UserDefaults.standard.set(data, forKey: "Added")
+
+        } catch {
+            print("Unable to Encode Note (\(error))")
+        }
+        
+        
         self.virusManager.save(doc, completion: { result in
+            
             switch result {
             case .success(_):
-                print("wszystko ok")
+                print("wszystko ok ")
             case .failure(let error):
-                print(error)
+                print("error")
+            default:
+                print("hee")
                 
             }
         })
@@ -126,8 +150,17 @@ class ReportVirusViewController: UIViewController {
     }
     
     @IBAction func unwindToReport( _ seg: UIStoryboardSegue) {
-        
+      
     }
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?)
+    {
+        if segue.destination is MapViewController {
+            let vc = segue.destination as? MapViewController
+            vc?.listener()
+            
+        }
+    }
+    
     
     func buttonColorBorder(_ button : UIButton) {
         button.layer.borderWidth = 1.0
@@ -214,6 +247,7 @@ class ReportVirusViewController: UIViewController {
     }
     
 }
+
 
 
 
